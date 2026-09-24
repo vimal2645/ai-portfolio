@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Sparkles, X, Send, Mail, Phone, ChevronRight, Bot, RotateCcw } from 'lucide-react';
 import { profile } from '../../config/profile';
 import styles from './AIChatbot.module.css';
