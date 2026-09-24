@@ -62,6 +62,8 @@ export function BackgroundVideo() {
         muted
         loop
         playsInline
+        disablePictureInPicture
+        disableRemotePlayback
       >
         <source src="/background-video.mp4" type="video/mp4" />
       </video>

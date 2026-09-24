@@ -20,6 +20,7 @@
   opacity: 0.3; /* Subtle visibility */
   filter: saturate(0) contrast(1.2); /* Black and white by default for aesthetics */
   transition: opacity 1s ease-in-out, filter 1s ease;
+  pointer-events: none; /* Prevent interaction like play/pause on iPad */
 }
 
 [data-theme="cyberpunk"] .videoElement {
