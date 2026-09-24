@@ -1,0 +1,94 @@
+@property --a {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.frame {
+  position: relative;
+  border-radius: 18px;
+  isolation: isolate;
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  transition: outline 0.3s ease;
+}
+
+.frame:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--a), 
+    rgba(124,58,237,.9), 
+    rgba(124,58,237,0) 25%, 
+    rgba(255,255,255,.18) 50%, 
+    rgba(124,58,237,0) 75%, 
+    rgba(124,58,237,.9)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+  transition: opacity 0.4s;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.frame:hover::before {
+  opacity: 1;
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  to { --a: 360deg; }
+}
+
+.spotlight {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), rgba(124,58,237,.16), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.frame:hover .spotlight {
+  opacity: 1;
+}
+
+.corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--accent);
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.frame:hover .corner {
+  width: 18px;
+  height: 18px;
+}
+
+.cornerTL { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 18px 0 0 0; }
+.cornerTR { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 18px 0 0; }
+.cornerBL { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 18px; }
+.cornerBR { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 18px 0; }
+
+.content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+}

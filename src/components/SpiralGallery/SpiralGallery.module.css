@@ -1,0 +1,90 @@
+.pinWrapper {
+  width: 100vw;
+  height: 100svh;
+  overflow: hidden;
+  position: relative;
+  /* Break out of container */
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  background: transparent;
+}
+
+.horizontalTrack {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  align-items: center;
+  padding: 0 10vw;
+  gap: 5vw;
+}
+
+.projectFrame {
+  width: 60vw;
+  max-width: 600px;
+  flex-shrink: 0;
+}
+
+.capabilityCard {
+  background: var(--surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.capabilityIcon {
+  width: 64px;
+  height: 64px;
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--accent);
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+}
+
+.capabilityTitle {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.capabilityDesc {
+  color: var(--muted-text);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.chipsRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.chip {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 99px;
+  font-size: 0.85rem;
+  color: var(--muted-text);
+}
+
+@media (max-width: 899px) {
+  .pinWrapper {
+    height: auto;
+    overflow: visible;
+  }
+
+  .horizontalTrack {
+    flex-direction: column;
+    padding: 24px;
+    gap: 24px;
+    width: 100vw;
+  }
+
+  .projectFrame {
+    width: 100%;
+    max-width: none;
+  }
+}

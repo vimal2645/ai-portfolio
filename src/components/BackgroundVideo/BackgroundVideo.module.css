@@ -1,0 +1,52 @@
+.videoWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100svh;
+  z-index: -2; /* Lowest z-index, behind everything */
+  overflow: hidden;
+  background: var(--bg); /* Fallback */
+}
+
+.videoElement {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100svh;
+  object-fit: cover;
+  transform: translate(-50%, -50%);
+  opacity: 0.3; /* Subtle visibility */
+  filter: saturate(0) contrast(1.2); /* Black and white by default for aesthetics */
+  transition: opacity 1s ease-in-out, filter 1s ease;
+}
+
+[data-theme="cyberpunk"] .videoElement {
+  opacity: 0.25;
+  filter: saturate(0.8) sepia(0.3) hue-rotate(240deg); /* Slight purple tint */
+}
+
+[data-theme="neobrutalism"] .videoElement {
+  opacity: 0.15;
+  filter: saturate(0) contrast(2); /* High contrast B&W */
+  mix-blend-mode: multiply;
+}
+
+[data-theme="minimalist"] .videoElement {
+  opacity: 0.1;
+  filter: saturate(0) brightness(1.5); /* Washed out */
+}
+
+/* Gradient overlay to blend the edges and add depth */
+.videoOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 0%, var(--bg) 100%),
+              linear-gradient(to bottom, var(--bg) 0%, transparent 10%, transparent 90%, var(--bg) 100%);
+  pointer-events: none;
+}
+

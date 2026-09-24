@@ -1,0 +1,22 @@
+.toggleBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-hairline);
+  background: var(--surface);
+  color: var(--muted-text);
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+  cursor: none;
+}
+
+.toggleBtn:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.toggleBtn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}

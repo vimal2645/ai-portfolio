@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap');
+
+:root {
+  /* ================= CORE TOKENS (Cyberpunk Default) ================= */
+  --bg: #0a0410;
+  --bg-alt: #150d26;
+  --surface: rgba(255,255,255,0.02);
+  --text: #ffffff;
+  --muted-text: #8b8b93;
+  --accent: #8b5cf6;
+  --accent-magenta: #ec4899;
+  
+  --border-hairline: rgba(255,255,255,0.08);
+  --border-hover: rgba(139, 92, 246, 0.4);
+  
+  --font-display: 'Clash Display', 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  
+  --gutter: clamp(20px, 5vw, 64px);
+  --container-width: min(1200px, 100% - 2 * var(--gutter));
+  --section-padding-block: clamp(96px, 12vw, 160px);
+  --radius-card: 24px;
+  --radius-pill: 99px;
+  
+  --brutal-shadow: none;
+}
+
+[data-theme="neobrutalism"] {
+  --bg: #e0e0e0;
+  --bg-alt: #ffffff;
+  --surface: #ffffff;
+  --text: #000000;
+  --muted-text: #4b4b4b;
+  --accent: #ff3e00;
+  --accent-magenta: #ff3e00;
+  
+  --border-hairline: #000000;
+  --border-hover: #000000;
+  
+  --brutal-shadow: 6px 6px 0px #000000;
+  --radius-card: 0px;
+  --radius-pill: 0px;
+}
+
+[data-theme="minimalist"] {
+  --bg: #ffffff;
+  --bg-alt: #f9fafb;
+  --surface: #f3f4f6;
+  --text: #111827;
+  --muted-text: #6b7280;
+  --accent: #000000;
+  --accent-magenta: #4b5563;
+  
+  --border-hairline: rgba(0,0,0,0.1);
+  --border-hover: rgba(0,0,0,0.3);
+  
+  --brutal-shadow: none;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg-alt) 50%, var(--bg) 100%);
+  background-size: 200% 200%;
+  animation: bgPulse 15s ease infinite;
+  color: var(--text);
+  font-size: clamp(1rem, 1vw + 0.5rem, 1.125rem); /* 16-18px */
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.text-gradient {
+  background: linear-gradient(to right, var(--accent), var(--accent-magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.eyebrow {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.container {
+  width: var(--container-width);
+  margin-inline: auto;
+}
+
+@keyframes bgPulse {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
+}
+
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
