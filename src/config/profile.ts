@@ -91,12 +91,17 @@ export const profile = {
     {
       period: "Present",
       role: "AI Developer & Automation Specialist",
-      company: "Freelance"
+      company: "Building Micro SaaS apps for VPIXCEL (own idea) & Freelance"
     },
     {
       period: "Apr 2026 – Jul 2026",
       role: "Data Science & AI Web Intern",
       company: "Honeybee Digital"
+    },
+    {
+      period: "Certifications",
+      role: "IBM Data Science (8 courses) & DevOps (7 courses) • Gen AI • AI & LLM with RAG",
+      company: "IBM | Outskill | Tayana Academy"
     },
     {
       period: "Graduated Sept 2024",

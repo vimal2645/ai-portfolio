@@ -1,0 +1,202 @@
+.about-me-section {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 2rem;
+  z-index: 2;
+  background: #ffffff;
+}
+
+/* Paper noise texture */
+.about-me-section::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+.about-me-header {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.about-me-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: clamp(32px, 6vw, 70px);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+  color: #111;
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.about-me-title:hover {
+  letter-spacing: 0.02em;
+  text-shadow: -4px 4px 0px rgba(47, 91, 255, 0.15), 4px -4px 0px rgba(255, 95, 168, 0.15);
+  color: #000;
+}
+
+.about-me-content-wrapper {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 1000px;
+  width: 100%;
+}
+
+.about-me-intro {
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(0.9rem, 1.5vw, 1.25rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-align: center;
+  line-height: 1.3;
+  color: #222;
+  text-transform: uppercase;
+  margin: 0;
+  padding: 0 1rem;
+}
+
+.italic-text {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-weight: 700;
+  text-transform: none;
+  font-size: 1.1em;
+}
+
+@keyframes shimmerText {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.vibe-text {
+  background: linear-gradient(135deg, #2f5bff 0%, #ff5fa8 50%, #ff9a4d 100%, #2f5bff 150%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  padding-left: 0.2em;
+  animation: shimmerText 4s linear infinite;
+}
+
+.about-me-timeline {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .about-me-timeline {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.about-me-timeline-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border-left: 3px solid rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.about-me-timeline-item:hover {
+  border-left-color: #8b5cf6;
+  background: rgba(0,0,0,0.03);
+  transform: translateY(-5px);
+}
+
+.about-me-timeline-period {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem;
+  color: #8b5cf6;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.about-me-timeline-role {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #111;
+  line-height: 1.2;
+  margin-top: 0.25rem;
+}
+
+.about-me-timeline-company {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+/* About Me Animated Filler SVGs */
+.about-filler-1, .about-filler-2, .about-filler-3 {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+}
+.about-filler-1 {
+  top: 15%; left: 5%;
+  width: 250px; height: 250px;
+  animation: float1 12s ease-in-out infinite;
+}
+.about-filler-2 {
+  bottom: 20%; right: 5%;
+  width: 350px; height: 350px;
+  animation: float2 15s ease-in-out infinite reverse;
+}
+.about-filler-3 {
+  top: 40%; right: 15%;
+  width: 180px; height: 180px;
+  animation: float1 18s ease-in-out infinite 2s;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-40px) rotate(15deg); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(50px) rotate(-10deg) scale(1.05); }
+}
+
+.about-filler-svg path,
+.about-filler-svg circle,
+.about-filler-svg rect,
+.about-filler-svg polygon {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: drawLineSVG 6s ease-in-out infinite alternate;
+}
+
+@keyframes drawLineSVG {
+  0% { stroke-dashoffset: 300; }
+  100% { stroke-dashoffset: 0; }
+}

@@ -1,442 +1,331 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { profile } from './config/profile';
-import { Canvas } from '@react-three/fiber';
-import { ParticlePortrait } from './components/ParticlePortrait';
-import { LogoMark } from './components/LogoMark';
 import { CustomCursor } from './components/CustomCursor';
-import { LiquidImage } from './components/LiquidImage';
-import { ScrollyArtifact } from './components/ScrollyArtifact';
-import { BackgroundVideo } from './components/BackgroundVideo';
-import { SpiralGallery } from './components/SpiralGallery';
 import { AIChatbot } from './components/AIChatbot';
-import { AudioEngine } from './lib/AudioEngine';
+import { AnimatedBackground } from './components/AnimatedBackground';
+import { Hero } from './components/Hero';
+import { AboutMe } from './components/AboutMe';
 import Lenis from '@studio-freight/lenis';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import styles from './App3D.module.css';
 
-import styles from './App.module.css';
+gsap.registerPlugin(ScrollTrigger);
 
-const navLinks = [
-  { id: 'work', label: 'Work' },
-  { id: 'labs', label: 'Labs' },
-  { id: 'skills', label: 'Skills' },
-  { id: 'process', label: 'Process' },
-  { id: 'about', label: 'About' },
-  { id: 'contact', label: 'Contact' },
-];
+// ── 3D Tilt Card (MYHOUSE effect) ──────────────────────────────────────────
+function Card3D({
+  children,
+  className = '',
+  glowColor = '#8b5cf6',
+}: {
+  children: React.ReactNode;
+  className?: string;
+  glowColor?: string;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
 
-function App() {
-  const [activeSection, setActiveSection] = useState('home');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const lenisRef = useRef<Lenis | null>(null);
-
-  // Navigation Pill state
-  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
-
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
-    });
-    lenisRef.current = lenis;
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
+  const onMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const { left, top, width, height } = el.getBoundingClientRect();
+    const x = e.clientX - left;
+    const y = e.clientY - top;
+    const rx = ((y / height) - 0.5) * -20;
+    const ry = ((x / width) - 0.5) * 20;
+    el.style.transform = `perspective(1200px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.03,1.03,1.03)`;
+    if (glowRef.current) {
+      glowRef.current.style.background = `radial-gradient(circle at ${x}px ${y}px, ${glowColor}55 0%, transparent 70%)`;
     }
-    requestAnimationFrame(raf);
+  }, [glowColor]);
 
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
-
-  // Initialize audio engine on first user interaction
-  useEffect(() => {
-    const initAudio = () => {
-      AudioEngine.setEnabled(true);
-      window.removeEventListener('pointerdown', initAudio);
-      window.removeEventListener('keydown', initAudio);
-    };
-    window.addEventListener('pointerdown', initAudio, { once: true });
-    window.addEventListener('keydown', initAudio, { once: true });
-    return () => {
-      window.removeEventListener('pointerdown', initAudio);
-      window.removeEventListener('keydown', initAudio);
-    };
-  }, []);
-
-  // Update pill position when active section changes
-  useEffect(() => {
-    const activeEl = document.querySelector(`a[href="#${activeSection}"]`) as HTMLAnchorElement;
-    if (activeEl) {
-      setPillStyle({
-        left: activeEl.offsetLeft,
-        width: activeEl.offsetWidth,
-        opacity: 1
-      });
-    } else {
-      setPillStyle(prev => ({ ...prev, opacity: 0 }));
-    }
-  }, [activeSection]);
-
-  const handleNavClick = (id: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsMenuOpen(false);
-    setActiveSection(id);
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(`#${id}`, { offset: -100, duration: 1.2 });
-    }
-  };
-
-  // Intro animation
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let mm = gsap.matchMedia();
-    mm.add({
-      isDesktop: "(min-width: 900px)"
-    }, (context) => {
-      let { isDesktop } = context.conditions as any;
-      if (isDesktop && !prefersReducedMotion) {
-        gsap.fromTo('.reveal-hero',
-          { y: 24, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.7, ease: 'expo.out', stagger: 0.08, delay: 0.2 }
-        );
-      }
-    });
-    return () => mm.revert();
+  const onLeave = useCallback(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    el.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
+    if (glowRef.current) glowRef.current.style.background = 'transparent';
   }, []);
 
   return (
-    <div className={styles.appContainer}>
-      <BackgroundVideo />
-      <ScrollyArtifact />
+    <div
+      ref={cardRef}
+      className={`${styles.card3d} ${className}`}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+    >
+      <div ref={glowRef} className={styles.cardGlow} />
+      {children}
+    </div>
+  );
+}
+
+
+
+// ── Tech Chip ───────────────────────────────────────────────────────────────
+function TechChip({ label }: { label: string }) {
+  return <span className={styles.techChip} style={{ background: 'rgba(0,0,0,0.05)', color: '#111', border: '1px solid rgba(0,0,0,0.1)' }}>{label}</span>;
+}
+
+// ── Main App ────────────────────────────────────────────────────────────────
+export default function App() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const lenis = new Lenis({ duration: 1.4, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    const raf = (time: number) => { lenis.raf(time); requestAnimationFrame(raf); };
+    requestAnimationFrame(raf);
+
+    const ctx = gsap.context(() => {
+      // Hero entrance — text lines slide up + skew
+      gsap.fromTo('.gsap-hero-title',
+        { y: 120, opacity: 0, skewY: 8 },
+        { y: 0, opacity: 1, skewY: 0, duration: 1.4, ease: 'expo.out', stagger: 0.15, delay: 0.3 }
+      );
+      gsap.fromTo('.gsap-hero-sub',
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, ease: 'expo.out', delay: 0.8 }
+      );
+      // Hero avatar image — slide in from right
+      gsap.fromTo('.gsap-hero-avatar',
+        { x: 80, opacity: 0, scale: 0.9 },
+        { x: 0, opacity: 1, scale: 1, duration: 1.6, ease: 'expo.out', delay: 0.4 }
+      );
+
+      // Reveal everything on scroll
+      gsap.utils.toArray('.gsap-reveal').forEach((el: any) => {
+        gsap.fromTo(el,
+          { y: 80, opacity: 0 },
+          {
+            y: 0, opacity: 1, duration: 1.1, ease: 'expo.out',
+            scrollTrigger: { trigger: el, start: 'top 85%' }
+          }
+        );
+      });
+
+      // Project cards: MYHOUSE 3D float-in effect
+      gsap.utils.toArray('.gsap-project-card').forEach((el: any, i: number) => {
+        gsap.fromTo(el,
+          { y: 120, opacity: 0, rotateX: 25, transformPerspective: 1000 },
+          {
+            y: 0, opacity: 1, rotateX: 0, duration: 1.3, ease: 'expo.out', delay: i * 0.15,
+            scrollTrigger: { trigger: el, start: 'top 80%' }
+          }
+        );
+      });
+
+      // Parallax on project images
+      gsap.utils.toArray('.gsap-parallax').forEach((img: any) => {
+        gsap.fromTo(img,
+          { y: -40 },
+          { y: 40, ease: 'none', scrollTrigger: { trigger: img.parentElement, scrub: true } }
+        );
+      });
+
+      // Horizontal scroll for projects using matchMedia
+      const mm = gsap.matchMedia();
+      mm.add("(min-width: 901px)", () => {
+        const spacer = document.querySelector('.gsap-projects-spacer');
+        const container = document.querySelector('.gsap-projects-container');
+        if (spacer && container) {
+          gsap.fromTo(container, 
+            { x: 0 },
+            { 
+              x: () => -(container.scrollWidth - window.innerWidth + 100), 
+              ease: 'none',
+              scrollTrigger: {
+                trigger: spacer,
+                start: 'top top',
+                end: () => `+=${(spacer as HTMLElement).offsetHeight - window.innerHeight * 2}`,
+                scrub: true
+              }
+            }
+          );
+        }
+      });
+    }, containerRef);
+
+    return () => { lenis.destroy(); ctx.revert(); };
+  }, []);
+
+  return (
+    <div ref={containerRef} className={styles.root}>
+      {/* Tesla wireframe + orb background */}
+      <AnimatedBackground />
       <CustomCursor />
 
-      {/* ================= NAV ================= */}
-      <header className={styles.header}>
-        <a href="#home" className={styles.logoBtn} onClick={(e) => handleNavClick('home', e)} aria-label="VPIXCEL home">
-          <LogoMark size={36} />
-          <span className={styles.navLogoText}>VPIXCEL</span>
-        </a>
-
-        <nav className={styles.desktopNav}>
-          <div className={styles.navLinksWrapper}>
-            <div className={styles.activePill} style={pillStyle} />
-            {navLinks.map((link) => (
-              <a
-                key={link.id}
-                href={`#${link.id}`}
-                className={`${styles.navLink} ${activeSection === link.id ? styles.activeLink : ''}`}
-                onClick={(e) => handleNavClick(link.id, e)}
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-        </nav>
-
-        <div className={styles.navActions}>
-          <a href="#contact" className={styles.btnPrimary} onClick={(e) => handleNavClick('contact', e)}>Start a project</a>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('open-chatbot'))} className={styles.btnGhost}>Ask Whizz</button>
-
-          <button className={styles.mobileMenuToggle} onClick={() => setIsMenuOpen(true)} aria-label="Open menu">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
-          </button>
+      {/* ── STACKED PARALLAX WRAPPER ── */}
+      <div style={{ position: 'relative' }}>
+        
+        {/* 1. HERO */}
+        <div style={{ position: 'sticky', top: 0, zIndex: 1, height: '100vh', overflow: 'hidden' }}>
+          <Hero />
         </div>
-      </header>
 
-      {isMenuOpen && (
-        <div className={styles.mobileMenuOverlay}>
-          <button className={styles.closeMenuButton} onClick={() => setIsMenuOpen(false)}>✕ CLOSE</button>
-          <nav className={styles.mobileNav}>
-            {navLinks.map((link) => (
-              <a
-                key={link.id}
-                href={`#${link.id}`}
-                className={styles.mobileNavLink}
-                onClick={(e) => handleNavClick(link.id, e)}
-              >
-                {link.label}
-              </a>
-            ))}
-            <a href="#contact" className={`${styles.mobileNavLink} text-gradient`} style={{ marginTop: '2rem' }} onClick={(e) => handleNavClick('contact', e)}>
-              Start a project
-            </a>
-            <button onClick={() => { setIsMenuOpen(false); window.dispatchEvent(new CustomEvent('open-chatbot')); }} className={styles.mobileNavLink}>
-              Ask Whizz
-            </button>
-          </nav>
+        {/* 2. ABOUT ME */}
+        <div className={styles.aboutWrapper}>
+          <AboutMe />
         </div>
-      )}
 
-      {/* ================= HERO ================= */}
-      <main>
-        <section id="home" className={styles.heroSection}>
-          <div className="container grid-12">
-            <div className={styles.heroContent}>
-              <div className={`${styles.availabilityPill} reveal-hero`}>
-                <div className={styles.dot}></div>
-                {profile.availability}
-              </div>
-
-              <div className={`eyebrow reveal-hero`}>{profile.label}</div>
-
-              <h1 className={`${styles.heroH1} reveal-hero scramble-text`}>
-                I build <span className="text-gradient">AI products</span> that ship.
-              </h1>
-
-              <p className={`${styles.heroSub} reveal-hero`}>
-                {profile.heroSub}
-              </p>
-
-              <div className={`${styles.heroButtons} reveal-hero`}>
-                <a href="#contact" className={styles.btnPrimary} onClick={(e) => handleNavClick('contact', e)}>Start a project</a>
-                <a href="#work" className={styles.btnGhost} onClick={(e) => handleNavClick('work', e)}>View work</a>
-              </div>
-
-              <div className={`${styles.proofRow} reveal-hero`}>
-                {profile.stats.map((stat, i) => (
-                  <div key={i} className={styles.proofItem}>
-                    <span className={styles.proofValue}>{stat.value}</span>
-                    <span className={styles.proofLabel}>{stat.label}</span>
-                  </div>
+        {/* 3. PROJECTS */}
+        <div className={`gsap-projects-spacer ${styles.projectsSpacer}`}>
+          <div className={styles.projectsSticky}>
+            
+            {/* ── SKILLS MARQUEE ── */}
+            <div className={styles.marqueeBar}>
+              <div className={styles.marqueeTrack}>
+                {[...profile.skillsMarquee, ...profile.skillsMarquee].map((s, i) => (
+                  <span key={i} className={styles.marqueeItem}>
+                    {s} <span className={styles.marqueeDot}>◆</span>
+                  </span>
                 ))}
               </div>
             </div>
 
-            <div className={`${styles.heroVisual} reveal-hero`}>
-              <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={[1, 2]}>
-                <ParticlePortrait imageUrl={profile.profileImage} secondaryImageUrl="/logo.png" />
-              </Canvas>
-            </div>
-          </div>
+            {/* ── SELECTED WORK (MYHOUSE 3D cards) ── */}
+            <section id="projects" className={styles.workSection} style={{ flex: 1, padding: '0', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div className="gsap-reveal" style={{ marginLeft: '5vw', marginBottom: '2rem' }}>
+                <p className={styles.eyebrow}>Selected Work</p>
+                <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>What I've Built</h2>
+              </div>
 
-          <div className={styles.scrollCue}>
-            <div className={styles.scrollCueLine}></div>
-          </div>
-        </section>
+              <div className={`gsap-projects-container ${styles.projectsGrid}`}>
+                {profile.featuredProjects.map((project, i) => (
+              <div key={project.slug} className={`gsap-project-card ${styles.projectRow}`}>
 
-        {/* ================= SKILLS MARQUEE ================= */}
-        <section className={styles.marqueeSection}>
-          <div className={styles.marqueeTrack}>
-            <span>{profile.skillsMarquee.join(' • ')}</span>
-            <span>{profile.skillsMarquee.join(' • ')}</span>
-            <span>{profile.skillsMarquee.join(' • ')}</span>
-            <span>{profile.skillsMarquee.join(' • ')}</span>
-          </div>
-        </section>
-
-        {/* ================= WORK ================= */}
-        <section id="work" className={styles.workSection}>
-          <div className="container">
-            <div className={styles.sectionHeader}>
-              <span className="eyebrow">SELECTED WORK</span>
-              <h2 className={`${styles.sectionH2} scramble-text`}>Flagship projects</h2>
-              <p className={styles.sectionSub}>Deployed products built from scratch.</p>
-            </div>
-
-            {profile.featuredProjects.map((project) => (
-              <div key={project.slug} className={styles.projectRow}>
-                <div className={styles.projectVisual}>
-                  <div className={styles.browserFrame}>
-                    <div className={styles.browserTop}>
-                      <div className={styles.browserDot}></div>
-                      <div className={styles.browserDot}></div>
-                      <div className={styles.browserDot}></div>
-                    </div>
-                    {/* Fallback to placeholder if missing */}
-                    <LiquidImage
-                      imageUrl={project.screenshots.desktop}
-                      alt={`${project.title} Desktop`}
-                      className={styles.projectImage}
-                    />
-                  </div>
-                  {project.screenshots.mobile && (
-                    <img
-                      src={project.screenshots.mobile}
-                      alt={`${project.title} Mobile`}
-                      className={styles.mobileMockup}
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  )}
-                </div>
-
+                {/* Info panel on the left */}
                 <div className={styles.projectInfo}>
-                  <div>
-                    <h3 className={styles.projectTitle}>{project.title}</h3>
-                    <div className={styles.projectOutcome}>{project.outcome}</div>
+                  <div className={styles.projectMeta}>
+                    <span className={styles.projectIndex}>0{i + 1}</span>
+                    <span className={styles.projectCategory}>{project.stack[0].toUpperCase()}</span>
                   </div>
-
-                  <div className={styles.projectDetailLine}>
-                    <strong>Problem:</strong> {project.problem}
-                  </div>
-                  <div className={styles.projectDetailLine}>
-                    <strong>What I built:</strong> {project.built}
-                  </div>
-                  <div className={styles.projectDetailLine}>
-                    <strong>Result:</strong> {project.result}
-                  </div>
-
-                  <div className={styles.chipsRow}>
-                    {project.stack.map(tech => <span key={tech} className={styles.chip}>{tech}</span>)}
-                  </div>
-
+                  <h3 className={styles.projectTitle}>{project.title.toUpperCase()}</h3>
+                  <p className={styles.projectProblem}>{project.problem}</p>
                   <div className={styles.projectLinks}>
-                    <a href={project.live} target="_blank" rel="noopener noreferrer" className={styles.btnPrimary}>Live Demo</a>
-                    <a href={project.github} target="_blank" rel="noopener noreferrer" className={styles.btnGhost}>GitHub</a>
+                    {project.live && project.live !== '#' && (
+                      <a href={project.live} target="_blank" rel="noreferrer" className={styles.btnGhost}>
+                        CLICK FOR LIVE APP
+                      </a>
+                    )}
                   </div>
                 </div>
+
+                {/* 3D Image Card on the right */}
+                <Card3D className={styles.projectCardWrap} glowColor={i % 2 === 0 ? '#8b5cf6' : '#ec4899'}>
+                  <div className={styles.projectImgOnlyWrap}>
+                    {project.screenshots.desktop ? (
+                      <img
+                        className={styles.projectImg}
+                        src={project.screenshots.desktop}
+                        alt={project.title}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className={styles.projectImgPlaceholder}>
+                        <span className={styles.placeholderIcon}>⚡</span>
+                        <span>{project.title}</span>
+                      </div>
+                    )}
+                  </div>
+                </Card3D>
               </div>
             ))}
-          </div>
-        </section>
-
-        {/* ================= LABS ================= */}
-        <section id="labs" className={styles.labsSection}>
-          <div className="container">
-            <div className={styles.sectionHeader}>
-              <span className="eyebrow">LABS & EXPERIMENTS</span>
-              <h2 className={`${styles.sectionH2} scramble-text`}>Explorations</h2>
-              <p className={styles.sectionSub}>Side projects proving specific capabilities.</p>
-            </div>
-
-            <div className={styles.bentoGrid} style={{ gridTemplateColumns: '1fr' }}>
-              <div className={`${styles.bentoCard} ${styles.bento12}`} style={{ padding: '4rem', textAlign: 'center' }}>
-                <div className={styles.dotGridBg}></div>
-                <div className={styles.bento12Content} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-                  <h3 className={styles.labTitle} style={{ fontSize: '2.5rem' }}>{profile.githubRepoCount} repositories on GitHub</h3>
-                  <p className={styles.projectDetailLine} style={{ maxWidth: '600px', margin: '0 auto' }}>
-                    Explore a wide range of experiments, open-source contributions, and boilerplate templates proving capabilities in AI, Data Pipelines, and Automations.
-                  </p>
-                  <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className={styles.btnPrimary} style={{ position: 'relative', zIndex: 1, marginTop: '1rem' }}>
-                    Explore GitHub Repositories
-                  </a>
-                </div>
               </div>
-            </div>
+            </section>
           </div>
-        </section>
-        {/* ================= CAPABILITIES ================= */}
-        <section id="skills" className={styles.capabilitiesSection}>
-          <div className="container">
-            <div className={styles.sectionHeader}>
-              <span className="eyebrow">WHAT I DO</span>
-              <h2 className={`${styles.sectionH2} scramble-text`}>Capabilities</h2>
-              <p className={styles.sectionSub}>Specialized engineering services for modern teams.</p>
-            </div>
+        </div>
 
-            <SpiralGallery />
+        {/* 4. CAPABILITIES */}
+        <div className={styles.capsWrapper}>
+          <div className="about-filler-1" style={{ top: '10%', right: '10%', opacity: 0.2 }}>
+            <svg className="about-filler-svg" viewBox="0 0 100 100" fill="none" stroke="#8b5cf6" strokeWidth="2"><circle cx="50" cy="50" r="40" /><path d="M10,50 Q50,10 90,50 T10,50" /></svg>
           </div>
-        </section>
-
-        {/* ================= PROCESS ================= */}
-        <section id="process" className={styles.processSection}>
-          <div className="container">
-            <div className={styles.sectionHeader}>
-              <span className="eyebrow">HOW I WORK</span>
-              <h2 className={`${styles.sectionH2} scramble-text`}>The Process</h2>
-              <p className={styles.sectionSub}>From concept to production-ready deployment.</p>
-            </div>
-
-            <div className={styles.processWrapper}>
-              <div className={styles.processLine}>
-                <div className={styles.processLineFill} id="process-line-fill"></div>
+          <div className="about-filler-3" style={{ bottom: '15%', left: '5%', opacity: 0.15 }}>
+            <svg className="about-filler-svg" viewBox="0 0 100 100" fill="none" stroke="#ec4899" strokeWidth="3"><polygon points="50,10 90,90 10,90" /><circle cx="50" cy="65" r="10" /></svg>
+          </div>
+          <section id="skills" className={styles.capsSection} style={{ padding: '0 5vw', width: '100%', position: 'relative', zIndex: 2 }}>
+            <div className={styles.container}>
+              <div className="gsap-reveal" style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                <p className={styles.eyebrow} style={{ color: '#555' }}>What I Do</p>
+                <h2 className={styles.sectionTitle} style={{ color: '#111', textShadow: '2px 2px 0px rgba(0,0,0,0.05)' }}>Capabilities</h2>
               </div>
-              <div className={styles.processSteps}>
-                {[
-                  { step: "01", title: "Discover", desc: "Aligning on goals, scoping features, and defining architecture." },
-                  { step: "02", title: "Design", desc: "Prototyping UX/UI and planning the technical stack." },
-                  { step: "03", title: "Build", desc: "Iterative development with regular feedback loops." },
-                  { step: "04", title: "Ship", desc: "Deployment, optimization, and handoff." }
-                ].map((item, i) => (
-                  <div key={i} className={styles.processStep}>
-                    <div className={styles.stepDot}>{item.step}</div>
-                    <div>
-                      <h4 className={styles.stepTitle}>{item.title}</h4>
-                      <p className={styles.stepDesc}>{item.desc}</p>
+              <div className={styles.capsGrid}>
+                {profile.capabilities.map((cap, i) => (
+                  <Card3D key={cap.title} className={`gsap-project-card ${styles.capCard}`} glowColor="#8b5cf6">
+                    <div className={styles.capInner} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.05)', color: '#111' }}>
+                      <div className={styles.capIndex} style={{ color: '#8b5cf6' }}>0{i + 1}</div>
+                      <h3 className={styles.capTitle}>{cap.title}</h3>
+                      <p className={styles.capDesc} style={{ color: '#444' }}>{cap.description}</p>
+                      <div className={styles.capChips}>
+                        {cap.chips.map((c) => <TechChip key={c} label={c} />)}
+                      </div>
                     </div>
-                  </div>
+                  </Card3D>
                 ))}
               </div>
             </div>
+          </section>
+        </div>
+
+        {/* 5. CONTACT */}
+        <div className={styles.contactWrapper}>
+          <div className="about-filler-2" style={{ top: '20%', left: '10%', opacity: 0.15 }}>
+             <svg className="about-filler-svg" viewBox="0 0 100 100" fill="none" stroke="#2f5bff" strokeWidth="2"><rect x="20" y="20" width="60" height="60" rx="10" transform="rotate(45 50 50)" /><circle cx="50" cy="50" r="10" /></svg>
           </div>
-        </section>
-        {/* ================= ABOUT ================= */}
-        <section id="about" className={styles.aboutSection}>
-          <div className="container grid-12">
-            <div className={styles.aboutVisual}>
-              <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={[1, 2]}>
-                <ParticlePortrait imageUrl={profile.profileImage} secondaryImageUrl="/logo.png" />
-              </Canvas>
+          <section id="contact" className={styles.contactSection} style={{ padding: '0 5vw', background: 'transparent', width: '100%', position: 'relative', zIndex: 2 }}>
+            <div className={styles.container}>
+              <div className={styles.contactInner} style={{ background: '#fff', borderRadius: '24px', padding: '4rem 2rem', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 20px 40px rgba(0,0,0,0.03)' }}>
+                <p className={`${styles.eyebrow} gsap-reveal`} style={{ color: '#555' }}>Let's Build Together</p>
+                <h2 className={`${styles.contactTitle} gsap-reveal`} style={{ color: '#111' }}>
+                  GOT AN IDEA?<br />
+                  <span className={styles.heroStroke} style={{ WebkitTextStroke: '2px #8b5cf6', filter: 'none' }}>LET'S TALK.</span>
+                </h2>
+                <div className={`${styles.contactCards} gsap-reveal`}>
+                <a href={`mailto:${profile.email}`} className={styles.contactCard} style={{ background: '#f5f5f7', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <span className={styles.contactCardIcon} style={{ color: '#111' }}>✉</span>
+                  <span className={styles.contactCardLabel} style={{ color: '#555' }}>Email</span>
+                  <span className={styles.contactCardValue} style={{ color: '#111' }}>{profile.email}</span>
+                </a>
+                <a href={profile.socialLinks.linkedin} target="_blank" rel="noreferrer" className={styles.contactCard} style={{ background: '#f5f5f7', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <span className={styles.contactCardIcon} style={{ color: '#111' }}>in</span>
+                  <span className={styles.contactCardLabel} style={{ color: '#555' }}>LinkedIn</span>
+                  <span className={styles.contactCardValue} style={{ color: '#111' }}>vimalprakash26</span>
+                </a>
+                <a href={profile.socialLinks.github} target="_blank" rel="noreferrer" className={styles.contactCard} style={{ background: '#f5f5f7', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <span className={styles.contactCardIcon} style={{ color: '#111' }}>⌥</span>
+                  <span className={styles.contactCardLabel} style={{ color: '#555' }}>GitHub</span>
+                  <span className={styles.contactCardValue} style={{ color: '#111' }}>{profile.githubRepoCount} repos</span>
+                </a>
+                <a href={profile.socialLinks.instagram} target="_blank" rel="noreferrer" className={styles.contactCard} style={{ background: '#f5f5f7', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <span className={styles.contactCardIcon} style={{ color: '#111' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                  </span>
+                  <span className={styles.contactCardLabel} style={{ color: '#555' }}>Instagram</span>
+                  <span className={styles.contactCardValue} style={{ color: '#111' }}>@vpixcel</span>
+                </a>
+              </div>
+              </div>
             </div>
-            <div className={styles.aboutContent}>
-              <div>
-                <span className="eyebrow">ABOUT ME</span>
-                <h2 className={`${styles.sectionH2} scramble-text`} style={{ textAlign: 'left', marginTop: '0.5rem' }}>Engineering & Aesthetics</h2>
-              </div>
-              <p className={styles.aboutStory}>{profile.aboutStory}</p>
+          </section>
+        </div>
+      </div> {/* END PARALLAX WRAPPER */}
 
-              <div className={styles.timeline}>
-                {profile.timeline.map((item, i) => (
-                  <div key={i} className={styles.timelineItem}>
-                    <div className={styles.timelinePeriod}>{item.period}</div>
-                    <div>
-                      <div className={styles.timelineRole}>{item.role}</div>
-                      <div className={styles.timelineCompany}>{item.company}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+      {/* ── FOOTER ── */}
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <div className={styles.footerInner}>
+            <span className={styles.footerBrand}>{profile.title}</span>
+            <span className={styles.footerCopy}>© 2026 — Built with React + Three.js</span>
+            <div className={styles.footerLinks}>
+              {Object.entries(profile.socialLinks).map(([key, url]) => (
+                <a key={key} href={url} target="_blank" rel="noreferrer" className={styles.footerLink}>
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </a>
+              ))}
             </div>
           </div>
-        </section>
-
-        {/* ================= CONTACT & FOOTER ================= */}
-        <section id="contact" className={styles.contactSection}>
-          <div className="container">
-            <div className={styles.contactHeader}>
-              <h2 className={`${styles.contactH2} scramble-text`}>Let's build something.</h2>
-              <p className={styles.sectionSub}>Available for freelance opportunities.</p>
-            </div>
-
-            <div className={styles.contactCards}>
-              <div className={styles.contactCard}>
-                <h3 className={styles.contactCardTitle}>Hiring me for a project</h3>
-                <p className={styles.sectionSub}>Let's discuss your requirements and build a technical roadmap.</p>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <a href={`mailto:${profile.email}`} className={styles.btnPrimary}>Email me</a>
-                  <a href={profile.calendlyUrl} target="_blank" rel="noopener noreferrer" className={styles.btnGhost}>Book a call</a>
-                </div>
-              </div>
-              <div className={styles.contactCard}>
-                <h3 className={styles.contactCardTitle}>Recruiting</h3>
-                <p className={styles.sectionSub}>Looking for a forward-deployed engineer to join your team?</p>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button onClick={() => window.dispatchEvent(new CustomEvent('open-chatbot'))} className={styles.btnPrimary}>Ask Whizz</button>
-                  <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className={styles.btnGhost}>LinkedIn</a>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.socialGrid}>
-              <a href={profile.socialLinks.github} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>GitHub ↗</a>
-              <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>LinkedIn ↗</a>
-              <a href={profile.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className={styles.socialLink}>Instagram @vpixcel ↗</a>
-            </div>
-
-            <footer className={styles.footer}>
-              <LogoMark size={56} />
-              <div className={styles.navLogoText}>VPIXCEL</div>
-              <div className={styles.footerTagline}>DATA | CODE | IMPACT</div>
-              <div className={styles.copyright}>© {new Date().getFullYear()} Vimal Prakash. All rights reserved.</div>
-            </footer>
-          </div>
-        </section>
-      </main>
+        </div>
+      </footer>
 
       <AIChatbot />
     </div>
   );
 }
-
-export default App;
